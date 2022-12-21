@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: sts-flask-service
+  labels:
+    app: sts-flask
+spec:
+  ports:
+  - port: 5000
+    name: web
+  clusterIP: None
+  selector:
+    app: sts-flask
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: demo-flask-server
+  namespace: example
+spec:
+  selector:
+    matchLabels:
+      app: sts-flask # has to match .spec.template.metadata.labels
+  
+  replicas: 3 # by default is 1
+  serviceName: "sts-flask-service"
+   # by default is 0
+  template:
+    metadata:
+      labels:
+        app: sts-flask # has to match .spec.selector.matchLabels
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: container-0
+        image: pujithamuttineni/flask-python:v2
+        ports:
+        - containerPort: 5000
+          name: web
